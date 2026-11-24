@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  sentinelx-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sentinelx-api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - BNB_RPC_URL_PRIMARY=${BNB_RPC_URL_PRIMARY:-https://bsc-dataseed.bnbchain.org}
+      - BNB_RPC_URL_SECONDARY=${BNB_RPC_URL_SECONDARY:-https://bsc-rpc.publicnode.com}
+      - GOPLUS_APP_KEY=${GOPLUS_APP_KEY}
+      - GOPLUS_APP_SECRET=${GOPLUS_APP_SECRET}
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:3001}
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/v1/blockchain/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - sentinelx-network
+
+networks:
+  sentinelx-network:
+    driver: bridge
